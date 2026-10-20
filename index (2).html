@@ -1,0 +1,1171 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Holiday Plan 2027–2038</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a departures-board ledger. Summary strip, alerts, savings, annual chart, settings, then one block per year with four trip cards that open into itineraries. */
+:root {
+  --bg: #eef1f4;
+  --surface: #ffffff;
+  --sunk: #f5f7f9;
+  --ink: #15233a;
+  --muted: #5b6878;
+  --line: #d6dce4;
+  --accent: #1d5fa8;
+  --stamp: #18805b;
+  --stamp-bg: #e3f3ec;
+  --warn: #a8630a;
+  --warn-bg: #fbf0dc;
+  --bad: #b8323f;
+  --bad-bg: #fbe6e8;
+  --c-main: #1d5fa8;
+  --c-sec: #3f9fc4;
+  --c-uk: #8a6bbf;
+  --c-ann: #d0577a;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1724; --surface: #172235; --sunk: #121c2c; --ink: #e6ecf4; --muted: #9aa7b8; --line: #2a3850;
+    --accent: #6ea8ec; --stamp: #4fcf9b; --stamp-bg: #143528;
+    --warn: #f0b552; --warn-bg: #3a2c12; --bad: #f2838e; --bad-bg: #3d1a20;
+    --c-main: #5c9ae6; --c-sec: #5fc0e0; --c-uk: #ad91e0; --c-ann: #ee7d9f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1724; --surface: #172235; --sunk: #121c2c; --ink: #e6ecf4; --muted: #9aa7b8; --line: #2a3850;
+  --accent: #6ea8ec; --stamp: #4fcf9b; --stamp-bg: #143528;
+  --warn: #f0b552; --warn-bg: #3a2c12; --bad: #f2838e; --bad-bg: #3d1a20;
+  --c-main: #5c9ae6; --c-sec: #5fc0e0; --c-uk: #ad91e0; --c-ann: #ee7d9f;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 32px 72px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1, h2, h3, h4 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(30px, 5vw, 44px); font-weight: 700; letter-spacing: -0.01em; }
+h3 { font-size: 18px; font-weight: 700; }
+h4 { font-size: 15px; font-weight: 700; }
+p { margin: 0; }
+.lede { color: var(--muted); margin-top: 6px; }
+.label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.hint { font-size: 13px; color: var(--muted); }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* Summary */
+.summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.stat { background: var(--surface); padding: 16px 18px; display: grid; gap: 4px; align-content: start; min-width: 0; }
+.stat .v { font-family: var(--font-mono); font-size: 24px; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1.2; overflow-wrap: anywhere; }
+.stat .v.text { font-family: var(--font-body); font-size: 17px; font-weight: 600; }
+.stat .s { color: var(--muted); font-size: 13px; }
+.meter { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+.meter > i { display: block; height: 100%; background: var(--stamp); width: 0; transition: width .4s ease; }
+
+/* Panels */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 14px; min-width: 0; }
+.panel-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; align-items: baseline; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; }
+
+/* Alerts */
+.alerts { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.alerts li { display: flex; gap: 10px; align-items: baseline; padding: 8px 12px; border-radius: 6px; background: var(--sunk); font-size: 14px; }
+.alerts li .tag { flex: none; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 1px 7px; border-radius: 4px; }
+.alerts li a { color: inherit; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; cursor: pointer; }
+.tag.bad { background: var(--bad-bg); color: var(--bad); }
+.tag.warn { background: var(--warn-bg); color: var(--warn); }
+.tag.ok { background: var(--stamp-bg); color: var(--stamp); }
+.tag.info { background: var(--line); color: var(--ink); }
+.more-alerts { font-size: 13px; color: var(--accent); background: none; border: 0; padding: 4px 0; cursor: pointer; font-family: var(--font-body); justify-self: start; }
+
+/* Savings */
+.sv-inputs { display: grid; gap: 12px; }
+.sv-results { display: grid; gap: 8px; }
+.sv-row { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; border-bottom: 1px dashed var(--line); padding-bottom: 6px; font-size: 14px; }
+.sv-row b { font-family: var(--font-mono); font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sv-verdict { font-size: 14px; padding: 10px 12px; border-radius: 6px; }
+.sv-verdict.ok { background: var(--stamp-bg); color: var(--stamp); }
+.sv-verdict.bad { background: var(--bad-bg); color: var(--bad); }
+.sv-verdict.info { background: var(--sunk); color: var(--muted); }
+.sv-inputs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 760px) { .sv-inputs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.box select { font: 400 14px var(--font-body); color: var(--ink); background: transparent; border: 0; padding: 7px 9px; width: 100%; }
+.money-wrap { overflow-x: auto; }
+table.mt { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 620px; }
+table.mt th { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; text-align: right; padding: 0 8px 8px; vertical-align: bottom; }
+table.mt th:first-child, table.mt td:first-child { text-align: left; padding-left: 0; }
+table.mt td { padding: 7px 8px; border-top: 1px solid var(--line); text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.mt td:first-child { font-family: var(--font-body); white-space: normal; }
+table.mt td:first-child small { display: block; color: var(--muted); font-size: 12px; }
+table.mt td.bal.neg { color: var(--bad); font-weight: 500; }
+table.mt td.bal.pos { color: var(--stamp); }
+table.mt tr.now td { background: var(--sunk); }
+
+/* Annual chart */
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.chart { display: grid; grid-template-columns: 44px minmax(0, 1fr) 76px; gap: 6px 10px; align-items: center; }
+.chart .yr { font-family: var(--font-mono); font-size: 13px; color: var(--muted); background: none; border: 0; padding: 0; text-align: left; cursor: pointer; }
+.chart .yr:hover { color: var(--accent); }
+.bar { display: flex; height: 18px; border-radius: 3px; overflow: hidden; }
+.bar > i { display: block; height: 100%; }
+.bar > i + i { box-shadow: inset 1px 0 0 var(--surface); }
+.bar > i.unbooked { opacity: .35; }
+.chart .tot { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 13px; text-align: right; }
+
+/* Settings */
+.settings { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.settings > div { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.travellers { display: grid; gap: 8px; }
+.traveller { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 6px; align-items: center; }
+.switch { display: inline-flex; gap: 8px; align-items: center; font-size: 14px; cursor: pointer; }
+.switch input { width: 18px; height: 18px; accent-color: var(--accent); }
+
+/* Inputs */
+input, textarea { font: 400 14px var(--font-body); color: var(--ink); background: transparent; border: 0; padding: 7px 9px; width: 100%; min-width: 0; }
+.box { border: 1px solid var(--line); border-radius: 6px; background: var(--sunk); }
+.money { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 6px; background: var(--sunk); }
+.money > span { padding-left: 9px; color: var(--muted); font-family: var(--font-mono); }
+.money input { font-family: var(--font-mono); font-variant-numeric: tabular-nums; padding-left: 3px; }
+.money input::placeholder { color: var(--muted); opacity: .6; }
+input[type="date"] { font-family: var(--font-mono); font-size: 13px; }
+input:focus-visible, button:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+input:disabled, textarea:disabled { color: var(--ink); }
+.field { display: grid; gap: 3px; min-width: 0; }
+.field.full { grid-column: 1 / -1; }
+.btn { font: 500 13px var(--font-body); border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+.btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.btn:disabled { opacity: .5; cursor: default; }
+.icon-btn { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 18px; line-height: 1; padding: 4px 8px; border-radius: 6px; }
+.icon-btn:hover:not(:disabled) { color: var(--bad); }
+
+/* Controls */
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { font: 500 13px var(--font-body); border: 0; background: none; color: var(--muted); padding: 7px 14px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.status-line { font-size: 13px; color: var(--muted); }
+
+/* Years */
+.years { display: grid; gap: 30px; }
+.year { display: grid; gap: 10px; scroll-margin-top: 16px; }
+.year-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; padding-bottom: 8px; border-bottom: 2px solid var(--ink); }
+.year-head h2 { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.year-head .meta { color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.year-head .meta b { color: var(--ink); font-family: var(--font-mono); font-weight: 500; }
+.trips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: start; }
+.trip { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--kind); border-radius: 8px; padding: 14px 16px; display: grid; gap: 12px; min-width: 0; scroll-margin-top: 16px; }
+.trip.open { grid-column: 1 / -1; }
+.trip[data-kind="main"] { --kind: var(--c-main); }
+.trip[data-kind="secondary"] { --kind: var(--c-sec); }
+.trip[data-kind="uk"] { --kind: var(--c-uk); }
+.trip[data-kind="anniversary"] { --kind: var(--c-ann); }
+.trip-top { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; }
+.trip-title { min-width: 0; display: grid; gap: 2px; }
+.trip-title .kind { color: var(--kind); }
+.trip-title h3 { font-size: 18px; font-weight: 500; line-height: 1.3; overflow-wrap: anywhere; }
+.book { flex: none; font: 600 12px var(--font-body); letter-spacing: .06em; text-transform: uppercase; border-radius: 6px; padding: 7px 12px; cursor: pointer; border: 1.5px dashed var(--line); color: var(--muted); background: transparent; display: inline-flex; gap: 6px; align-items: center; }
+.book:hover:not(:disabled) { border-color: var(--stamp); color: var(--stamp); }
+.book[aria-pressed="true"] { border: 2px solid var(--stamp); color: var(--stamp); background: var(--stamp-bg); transform: rotate(-3deg); }
+.book:disabled { cursor: default; }
+.book svg { width: 14px; height: 14px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips:empty { display: none; }
+.chip { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--sunk); border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.chip.bad { background: var(--bad-bg); color: var(--bad); border-color: transparent; }
+.chip.warn { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+.chip.ok { background: var(--stamp-bg); color: var(--stamp); border-color: transparent; }
+.chip.star { color: var(--warn); }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sub { font-size: 12px; font-family: var(--font-mono); color: var(--muted); }
+.sub.over { color: var(--bad); }
+.sub.under { color: var(--stamp); }
+
+/* Itinerary drawer */
+details.more { border-top: 1px solid var(--line); padding-top: 10px; }
+details.more > summary { cursor: pointer; font-weight: 600; font-size: 14px; color: var(--accent); list-style: none; display: flex; align-items: center; gap: 6px; }
+details.more > summary::-webkit-details-marker { display: none; }
+details.more > summary::before { content: "▸"; display: inline-block; transition: transform .15s; }
+details.more[open] > summary::before { transform: rotate(90deg); }
+.more-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px 28px; padding-top: 14px; }
+.more-body section { display: grid; gap: 8px; align-content: start; min-width: 0; }
+.more-body .wide { grid-column: 1 / -1; }
+.stops { display: grid; gap: 6px; counter-reset: stop; }
+.stop { display: grid; grid-template-columns: 22px minmax(0, 1fr) 84px auto; gap: 6px; align-items: center; }
+.stop::before { counter-increment: stop; content: counter(stop); font-family: var(--font-mono); font-size: 12px; color: var(--muted); text-align: center; }
+.stop .n { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 6px; background: var(--sunk); }
+.stop .n input { font-family: var(--font-mono); text-align: right; padding-right: 2px; }
+.stop .n span { font-size: 12px; color: var(--muted); padding-right: 8px; }
+.table-wrap { overflow-x: auto; }
+table.bd { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.bd th { text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding: 0 6px 6px; }
+table.bd td { padding: 3px 6px; vertical-align: middle; }
+table.bd td:first-child { padding-left: 0; }
+table.bd td.cat { min-width: 130px; }
+table.bd td.cat small { display: block; color: var(--muted); font-size: 12px; }
+table.bd td.m { width: 30%; min-width: 96px; }
+.days { display: grid; gap: 10px; }
+.day { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 6px 14px; align-items: start; padding-top: 10px; border-top: 1px dashed var(--line); }
+.day:first-child { border-top: 0; padding-top: 0; }
+.day-head { display: grid; gap: 1px; }
+.day-head b { font-family: var(--font-display); font-size: 15px; }
+.day-head span { font-size: 12px; color: var(--muted); }
+.day-head .where { color: var(--ink); font-size: 13px; }
+.day textarea { border: 1px solid var(--line); border-radius: 6px; background: var(--sunk); resize: vertical; min-height: 60px; line-height: 1.45; }
+.days-foot { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+@media (max-width: 520px) { .day { grid-template-columns: minmax(0, 1fr); } }
+table.bd td.pc { width: 44px; text-align: center; }
+table.bd th.pc { text-align: center; }
+.paidbox { width: 18px; height: 18px; accent-color: var(--stamp); cursor: pointer; }
+table.bd tfoot td { border-top: 1px solid var(--line); padding-top: 8px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.bd-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: center; }
+.alloc { font-size: 13px; font-family: var(--font-mono); }
+.alloc.over { color: var(--bad); }
+.alloc.ok { color: var(--stamp); }
+.alloc.left { color: var(--warn); }
+.stars { display: inline-flex; gap: 2px; }
+.stars button { border: 0; background: none; font-size: 22px; line-height: 1; padding: 2px; cursor: pointer; color: var(--line); }
+.stars button.on { color: var(--warn); }
+.stars button:disabled { cursor: default; }
+.entry-text { font-size: 14px; }
+.pp-list { font-size: 14px; display: grid; gap: 4px; }
+.pp-list .bad { color: var(--bad); }
+.pp-list .ok { color: var(--stamp); }
+.ext-link { color: var(--accent); font-size: 13px; }
+
+.ratings { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.ratings li { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 10px; align-items: baseline; font-size: 14px; }
+.ratings li .st { color: var(--warn); letter-spacing: 1px; }
+.ratings li small { color: var(--muted); display: block; }
+
+.empty { background: var(--surface); border: 1px dashed var(--line); border-radius: 10px; padding: 32px 20px; text-align: center; color: var(--muted); }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--surface); padding: 8px 14px; border-radius: 8px; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 5; }
+.toast.show { opacity: 1; }
+
+@media (max-width: 860px) {
+  .settings { grid-template-columns: minmax(0, 1fr); }
+  .two { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .trips { grid-template-columns: minmax(0, 1fr); }
+  .more-body { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 420px) {
+  .chart { grid-template-columns: 40px minmax(0, 1fr) 62px; }
+  .sv-inputs { grid-template-columns: minmax(0, 1fr); }
+  .stop { grid-template-columns: 18px minmax(0, 1fr) 74px auto; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } .book[aria-pressed="true"] { transform: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Holiday Plan 2027–2038</h1>
+    <p class="lede">Twelve years, four trips a year. Mark trips booked, plan each itinerary and track what you save and spend.</p>
+  </header>
+
+  <section class="summary" aria-label="Summary">
+    <div class="stat"><span class="label" id="s-due-label">Still to pay</span><span class="v" id="s-due">—</span><span class="s" id="s-due-sub"></span></div>
+    <div class="stat"><span class="label">Trips booked</span><span class="v" id="s-booked">—</span><div class="meter"><i id="s-booked-bar"></i></div><span class="s" id="s-booked-sub"></span></div>
+    <div class="stat"><span class="label">Marking money needed</span><span class="v" id="s-mark">—</span><span class="s" id="s-mark-sub">each summer, on top of monthly saving</span></div>
+    <div class="stat"><span class="label">Next trip</span><span class="v text" id="s-next">—</span><span class="s" id="s-next-sub"></span></div>
+  </section>
+
+  <section class="panel" aria-labelledby="alerts-h">
+    <div class="panel-head"><h3 id="alerts-h">Needs attention</h3><span class="hint" id="alerts-count"></span></div>
+    <ul class="alerts" id="alerts"><li><span class="hint">Booking deadlines, date clashes and passport problems will show here.</span></li></ul>
+    <button type="button" class="more-alerts" id="alerts-more" hidden></button>
+  </section>
+
+  <section class="panel" aria-labelledby="sv-h">
+    <div class="panel-head"><h3 id="sv-h">Paying for it</h3><span class="hint" id="sv-basis"></span></div>
+    <p class="hint">Each summer, marking money pays for next year's flights and hotels. Food, activities and getting around are paid on the trip itself. Tick what's already paid in each trip's budget breakdown.</p>
+    <div class="sv-inputs">
+      <label class="field"><span class="label">In the holiday pot now</span><span class="money"><span>£</span><input id="set-saved" inputmode="numeric" placeholder="0"></span></label>
+      <label class="field"><span class="label">Put aside each month</span><span class="money"><span>£</span><input id="set-monthly" inputmode="numeric" placeholder="450"></span></label>
+      <label class="field"><span class="label">Marking money each summer</span><span class="money"><span>£</span><input id="set-lump" inputmode="numeric" placeholder="0"></span></label>
+      <label class="field"><span class="label">You book next year's trips in</span><span class="box"><select id="set-paymonth"></select></span></label>
+    </div>
+    <p class="sv-verdict info" id="sv-verdict">Enter your monthly saving and marking money to check each year.</p>
+    <div class="money-wrap"><table class="mt" id="mt">
+      <thead><tr><th>Year</th><th>Flights &amp; hotels<br>for next year</th><th>Spending money<br>on this year's trips</th><th>To pay</th><th>Monthly saving<br>+ marking</th><th>Left over</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </section>
+
+  <section class="panel" aria-labelledby="bud-h">
+    <div class="panel-head">
+      <h3 id="bud-h">Budget by year</h3>
+      <div class="legend">
+        <span><i style="background:var(--c-main)"></i>Main holiday</span>
+        <span><i style="background:var(--c-sec)"></i>Secondary</span>
+        <span><i style="background:var(--c-uk)"></i>UK holiday</span>
+        <span><i style="background:var(--c-ann)"></i>Anniversary</span>
+      </div>
+    </div>
+    <div class="chart" id="chart"></div>
+    <p class="hint">Faded segments are trips not yet booked. Tap a year to jump to it.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="set-h">
+    <div class="panel-head"><h3 id="set-h">Plan settings</h3></div>
+    <div class="settings">
+      <div>
+        <span class="label">Prices</span>
+        <label class="switch"><input type="checkbox" id="set-showinfl"> Show budgets in future prices</label>
+        <label class="field"><span class="label">Inflation per year</span><span class="money"><input id="set-infl" inputmode="decimal" placeholder="2.5" style="text-align:right;padding-right:2px"><span style="padding:0 9px 0 0">%</span></span></label>
+        <p class="hint">Budgets are in today's (2026) prices. Savings figures always allow for inflation.</p>
+      </div>
+      <div>
+        <span class="label">Anniversary</span>
+        <label class="field"><span class="label">Date you married or got together</span><span class="box"><input type="date" id="set-anniv"></span></label>
+        <p class="hint" id="anniv-hint">Used to check that each anniversary trip includes the day.</p>
+      </div>
+      <div>
+        <span class="label">Passports</span>
+        <div class="travellers" id="travellers"></div>
+        <button type="button" class="btn" id="add-traveller" style="justify-self:start">+ Add traveller</button>
+        <p class="hint">Each passport's expiry date is checked against every trip's entry rules.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="ratings-panel" aria-labelledby="rt-h" hidden>
+    <div class="panel-head"><h3 id="rt-h">Your trip rankings</h3><span class="hint">From your ratings after each trip</span></div>
+    <ol class="ratings" id="ratings"></ol>
+  </section>
+
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Show trips">
+      <button type="button" data-f="all" aria-pressed="true">All trips</button>
+      <button type="button" data-f="todo" aria-pressed="false">To book</button>
+      <button type="button" data-f="done" aria-pressed="false">Booked</button>
+    </div>
+    <span class="status-line" id="status">Loading your plan…</span>
+  </div>
+
+  <section class="years" id="years">
+    <div class="empty">Your trips will appear here, year by year, once the plan loads.</div>
+  </section>
+
+  <p class="hint">Entry rules shown are for UK passport holders and change often. Check <a class="ext-link" href="https://www.gov.uk/foreign-travel-advice" target="_blank" rel="noopener">GOV.UK foreign travel advice</a> before you book.</p>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+window.HP_SEED = {"trips": {"2031-anniversary": {"booked": false, "budget": 750, "destination": "🇨🇿 Prague", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "anniversary", "leadMonths": 3, "passportMonths": 3, "stops": [{"nights": 3, "place": "Prague"}], "stopsEdited": false, "year": 2031}, "2028-anniversary": {"booked": false, "budget": 1000, "destination": "🇮🇹 Venice", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "anniversary", "leadMonths": 3, "passportMonths": 3, "stops": [{"nights": 3, "place": "Venice"}], "stopsEdited": false, "year": 2028}, "2037-anniversary": {"booked": false, "budget": 800, "destination": "🇬🇷 Athens", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "anniversary", "leadMonths": 3, "passportMonths": 3, "stops": [{"nights": 3, "place": "Athens"}], "stopsEdited": false, "year": 2037}, "2036-main": {"booked": false, "budget": 4500, "destination": "🇹🇼 Taiwan", "entry": "Visa-free for UK visitors. Your passport must be valid for 6 months from arrival.", "entryTag": "No visa", "haul": "long", "kind": "main", "leadMonths": 9, "passportMonths": 6, "stops": [{"nights": 4, "place": "Taipei"}, {"nights": 2, "place": "Hualien & Taroko"}, {"nights": 1, "place": "Sun Moon Lake"}, {"nights": 2, "place": "Tainan"}, {"nights": 2, "place": "Kaohsiung"}], "stopsEdited": false, "year": 2036}, "2035-anniversary": {"booked": false, "budget": 900, "destination": "🇨🇭 Geneva", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "anniversary", "leadMonths": 3, "passportMonths": 3, "stops": [{"nights": 3, "place": "Geneva"}], "stopsEdited": false, "year": 2035}, "2031-uk": {"booked": false, "budget": 1000, "destination": "🏴 Edinburgh + Borders", "entry": "UK trip, so no passport or entry checks needed.", "entryTag": "", "haul": "uk", "kind": "uk", "leadMonths": 4, "passportMonths": null, "stops": [{"nights": 3, "place": "Edinburgh"}, {"nights": 2, "place": "Melrose"}], "stopsEdited": false, "year": 2031}, "2029-secondary": {"booked": false, "budget": 1500, "destination": "🇳🇴 Norway", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "secondary", "leadMonths": 5, "passportMonths": 3, "stops": [{"nights": 2, "place": "Bergen"}, {"nights": 1, "place": "Flåm"}, {"nights": 2, "place": "Oslo"}], "stopsEdited": false, "year": 2029}, "2030-main": {"booked": false, "budget": 5500, "destination": "🇧🇷 Brazil", "entry": "No visa needed for UK visitors staying up to 90 days. 6 months' passport validity is recommended.", "entryTag": "No visa", "haul": "long", "kind": "main", "leadMonths": 10, "passportMonths": 6, "stops": [{"nights": 5, "place": "Rio de Janeiro"}, {"nights": 2, "place": "Paraty"}, {"nights": 2, "place": "Iguaçu Falls"}, {"nights": 3, "place": "Salvador"}], "stopsEdited": false, "year": 2030}, "2030-anniversary": {"booked": false, "budget": 850, "destination": "🇫🇷 Nice", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "anniversary", "leadMonths": 3, "passportMonths": 3, "stops": [{"nights": 3, "place": "Nice"}], "stopsEdited": false, "year": 2030}, "2034-main": {"booked": false, "budget": 4500, "destination": "🇨🇷 Costa Rica", "entry": "No visa needed for UK visitors. Passport validity rules have changed before, so 6 months spare is safest. You may be asked for proof of onward travel.", "entryTag": "No visa", "haul": "long", "kind": "main", "leadMonths": 9, "passportMonths": 6, "stops": [{"nights": 1, "place": "San José"}, {"nights": 3, "place": "Arenal"}, {"nights": 2, "place": "Monteverde"}, {"nights": 3, "place": "Manuel Antonio"}], "stopsEdited": false, "year": 2034}, "2029-anniversary": {"booked": false, "budget": 850, "destination": "🇪🇸 Seville", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "anniversary", "leadMonths": 3, "passportMonths": 3, "stops": [{"nights": 3, "place": "Seville"}], "stopsEdited": false, "year": 2029}, "2032-main": {"booked": false, "budget": 8000, "destination": "🇦🇺 Australia + 🇳🇿 New Zealand", "entry": "Australia: get an ETA or eVisitor before you fly. New Zealand: get an NZeTA and pay the tourist levy; passports must be valid 3 months after you leave New Zealand.", "entryTag": "ETA + NZeTA", "haul": "long", "kind": "main", "leadMonths": 11, "passportMonths": 3, "stops": [{"nights": 4, "place": "Sydney"}, {"nights": 3, "place": "Melbourne"}, {"nights": 3, "place": "Cairns"}, {"nights": 2, "place": "Auckland"}, {"nights": 2, "place": "Rotorua"}, {"nights": 4, "place": "Queenstown"}], "stopsEdited": false, "year": 2032}, "2038-anniversary": {"booked": false, "budget": 750, "destination": "🇵🇱 Warsaw", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "anniversary", "leadMonths": 3, "passportMonths": 3, "stops": [{"nights": 3, "place": "Warsaw"}], "stopsEdited": false, "year": 2038}, "2034-secondary": {"booked": false, "budget": 1500, "destination": "🇦🇱 Albania", "entry": "Not in Schengen. UK visitors don't need a visa for short stays. Your passport must be valid for your stay; 3 months spare is safest.", "entryTag": "No visa", "haul": "short", "kind": "secondary", "leadMonths": 4, "passportMonths": 3, "stops": [{"nights": 2, "place": "Tirana"}, {"nights": 1, "place": "Berat"}, {"nights": 3, "place": "Ksamil"}], "stopsEdited": false, "year": 2034}, "2037-main": {"booked": false, "budget": 3500, "destination": "🇸🇬 Singapore + 🇲🇾 Malaysia", "entry": "Singapore: submit the SG Arrival Card online before you land. Malaysia: complete the Digital Arrival Card. Both expect 6 months' passport validity.", "entryTag": "Arrival cards", "haul": "long", "kind": "main", "leadMonths": 9, "passportMonths": 6, "stops": [{"nights": 3, "place": "Singapore"}, {"nights": 3, "place": "Kuala Lumpur"}, {"nights": 3, "place": "Penang"}, {"nights": 3, "place": "Langkawi"}], "stopsEdited": false, "year": 2037}, "2031-main": {"booked": false, "budget": 6000, "destination": "🇺🇸 Hawaii", "entry": "You need an ESTA (apply at least 72 hours before travel). Passports must be valid for the length of your stay.", "entryTag": "ESTA", "haul": "long", "kind": "main", "leadMonths": 10, "passportMonths": 0, "stops": [{"nights": 4, "place": "Oahu"}, {"nights": 4, "place": "Maui"}, {"nights": 4, "place": "Big Island"}], "stopsEdited": false, "year": 2031}, "2034-uk": {"booked": false, "budget": 1000, "destination": "🏴 Northumberland", "entry": "UK trip, so no passport or entry checks needed.", "entryTag": "", "haul": "uk", "kind": "uk", "leadMonths": 3, "passportMonths": null, "stops": [{"nights": 2, "place": "Alnwick"}, {"nights": 2, "place": "Bamburgh"}, {"nights": 2, "place": "Hadrian's Wall"}], "stopsEdited": false, "year": 2034}, "2038-secondary": {"booked": false, "budget": 2250, "destination": "🇩🇪 Germany + 🇦🇹 Vienna", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "secondary", "leadMonths": 5, "passportMonths": 3, "stops": [{"nights": 3, "place": "Berlin"}, {"nights": 2, "place": "Munich"}, {"nights": 1, "place": "Salzburg"}, {"nights": 3, "place": "Vienna"}], "stopsEdited": false, "year": 2038}, "2028-uk": {"booked": false, "budget": 700, "destination": "🏴 Norwich + Norfolk", "entry": "UK trip, so no passport or entry checks needed.", "entryTag": "", "haul": "uk", "kind": "uk", "leadMonths": 3, "passportMonths": null, "stops": [{"nights": 2, "place": "Norwich"}, {"nights": 3, "place": "Wells-next-the-Sea"}], "stopsEdited": false, "year": 2028}, "2032-anniversary": {"booked": false, "budget": 800, "destination": "🇵🇹 Lisbon", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "anniversary", "leadMonths": 3, "passportMonths": 3, "stops": [{"nights": 3, "place": "Lisbon"}], "stopsEdited": false, "year": 2032}, "2035-uk": {"booked": false, "budget": 800, "destination": "🏴 Peak District + Sheffield", "entry": "UK trip, so no passport or entry checks needed.", "entryTag": "", "haul": "uk", "kind": "uk", "leadMonths": 3, "passportMonths": null, "stops": [{"nights": 2, "place": "Sheffield"}, {"nights": 3, "place": "Castleton"}], "stopsEdited": false, "year": 2035}, "2032-uk": {"booked": false, "budget": 1000, "destination": "🏴 Devon + Dorset", "entry": "UK trip, so no passport or entry checks needed.", "entryTag": "", "haul": "uk", "kind": "uk", "leadMonths": 4, "passportMonths": null, "stops": [{"nights": 3, "place": "Dartmoor"}, {"nights": 3, "place": "Lyme Regis"}], "stopsEdited": false, "year": 2032}, "2030-secondary": {"booked": false, "budget": 1300, "destination": "🇵🇹 Madeira", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "secondary", "leadMonths": 4, "passportMonths": 3, "stops": [{"nights": 5, "place": "Funchal"}], "stopsEdited": false, "year": 2030}, "2037-uk": {"booked": false, "budget": 1000, "destination": "🏴 Pembrokeshire", "entry": "UK trip, so no passport or entry checks needed.", "entryTag": "", "haul": "uk", "kind": "uk", "leadMonths": 4, "passportMonths": null, "stops": [{"nights": 3, "place": "St Davids"}, {"nights": 3, "place": "Tenby"}], "stopsEdited": false, "year": 2037}, "2031-secondary": {"booked": false, "budget": 2000, "destination": "🇯🇪 Jersey + 🇬🇬 Guernsey", "entry": "Common Travel Area, so no passport control, but airlines and ferries ask for photo ID.", "entryTag": "Photo ID", "haul": "short", "kind": "secondary", "leadMonths": 4, "passportMonths": null, "stops": [{"nights": 3, "place": "Jersey"}, {"nights": 2, "place": "Guernsey"}], "stopsEdited": false, "year": 2031}, "2033-main": {"booked": false, "budget": 8000, "destination": "🇯🇵 Japan + 🇰🇷 South Korea", "entry": "Japan: visa-free for UK visitors, but a JESTA pre-registration is planned. South Korea: check whether you need a K-ETA. 6 months' passport validity is the safe rule.", "entryTag": "Check JESTA / K-ETA", "haul": "long", "kind": "main", "leadMonths": 10, "passportMonths": 6, "stops": [{"nights": 4, "place": "Tokyo"}, {"nights": 1, "place": "Hakone"}, {"nights": 3, "place": "Kyoto"}, {"nights": 2, "place": "Osaka"}, {"nights": 2, "place": "Busan"}, {"nights": 4, "place": "Seoul"}], "stopsEdited": false, "year": 2033}, "2037-secondary": {"booked": false, "budget": 900, "destination": "🇪🇪 Estonia", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "secondary", "leadMonths": 4, "passportMonths": 3, "stops": [{"nights": 4, "place": "Tallinn"}], "stopsEdited": false, "year": 2037}, "2028-main": {"booked": false, "budget": 5000, "destination": "🇨🇦 Vancouver + 🇺🇸 Seattle", "entry": "Canada: you need an eTA if you fly in. USA: you need an ESTA (apply at least 72 hours before travel). Passports must be valid for the length of your stay.", "entryTag": "eTA + ESTA", "haul": "long", "kind": "main", "leadMonths": 10, "passportMonths": 0, "stops": [{"nights": 4, "place": "Vancouver"}, {"nights": 2, "place": "Whistler"}, {"nights": 1, "place": "Victoria"}, {"nights": 4, "place": "Seattle"}], "stopsEdited": false, "year": 2028}, "2038-main": {"booked": false, "budget": 5000, "destination": "🇲🇽 Mexico", "entry": "No visa needed for UK visitors. Your passport must be valid for your stay; 6 months spare avoids problems with airlines.", "entryTag": "No visa", "haul": "long", "kind": "main", "leadMonths": 10, "passportMonths": 6, "stops": [{"nights": 4, "place": "Mexico City"}, {"nights": 3, "place": "Oaxaca"}, {"nights": 2, "place": "Mérida"}, {"nights": 3, "place": "Tulum"}], "stopsEdited": false, "year": 2038}, "2038-uk": {"booked": false, "budget": 1300, "destination": "🏴 Isle of Skye", "entry": "UK trip, so no passport or entry checks needed.", "entryTag": "", "haul": "uk", "kind": "uk", "leadMonths": 5, "passportMonths": null, "stops": [{"nights": 1, "place": "Fort William"}, {"nights": 4, "place": "Portree"}], "stopsEdited": false, "year": 2038}, "2027-main": {"booked": true, "bookedAt": "2026-10-20", "budget": 2000, "destination": "🇩🇰 Denmark + 🇸🇪 Sweden", "endDate": "2027-07-25", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "flightsInfo": "Flights to Copenhagen and Malmö paid", "haul": "short", "kind": "main", "leadMonths": 6, "paidCats": {"travel": true}, "passportMonths": 3, "plan": {"activities": 200, "food": 400, "local": 100, "other": 100, "stay": 760, "travel": 440}, "spend": {"stay": 1200, "travel": 300}, "startDate": "2027-07-16", "stops": [{"nights": 7, "place": "Copenhagen"}, {"nights": 2, "place": "Malmö"}], "stopsEdited": true, "year": 2027}, "2036-anniversary": {"booked": false, "budget": 700, "destination": "🇭🇺 Budapest", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "anniversary", "leadMonths": 3, "passportMonths": 3, "stops": [{"nights": 3, "place": "Budapest"}], "stopsEdited": false, "year": 2036}, "2035-secondary": {"booked": false, "budget": 1000, "destination": "🇳🇱 Netherlands", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "secondary", "leadMonths": 4, "passportMonths": 3, "stops": [{"nights": 3, "place": "Amsterdam"}, {"nights": 1, "place": "Rotterdam"}], "stopsEdited": false, "year": 2035}, "2033-anniversary": {"booked": false, "budget": 900, "destination": "🇮🇹 Florence", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "anniversary", "leadMonths": 3, "passportMonths": 3, "stops": [{"nights": 3, "place": "Florence"}], "stopsEdited": false, "year": 2033}, "2034-anniversary": {"booked": false, "budget": 650, "destination": "🇧🇪 Bruges", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "anniversary", "leadMonths": 3, "passportMonths": 3, "stops": [{"nights": 3, "place": "Bruges"}], "stopsEdited": false, "year": 2034}, "2027-anniversary": {"booked": false, "budget": 900, "destination": "🇫🇷 Paris", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "anniversary", "leadMonths": 3, "passportMonths": 3, "stops": [{"nights": 3, "place": "Paris"}], "stopsEdited": false, "year": 2027}, "2028-secondary": {"booked": false, "budget": 1200, "destination": "🇲🇹 Malta", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "secondary", "leadMonths": 4, "passportMonths": 3, "stops": [{"nights": 4, "place": "Valletta"}, {"nights": 2, "place": "Gozo"}], "stopsEdited": false, "year": 2028}, "2035-main": {"booked": false, "budget": 6000, "destination": "🇿🇦 South Africa + 🇸🇭 St Helena", "entry": "South Africa: no visa; your passport must be valid 30 days after you leave and have 2 blank pages. St Helena: no visa, but you need travel insurance that covers medical evacuation. Flights to St Helena are limited, so plan around them.", "entryTag": "Insurance required", "haul": "long", "kind": "main", "leadMonths": 11, "passportMonths": 6, "stops": [{"nights": 5, "place": "Cape Town"}, {"nights": 2, "place": "Winelands"}, {"nights": 3, "place": "Kruger"}, {"nights": 7, "place": "St Helena"}], "stopsEdited": false, "year": 2035}, "2029-uk": {"booked": false, "budget": 1000, "destination": "🏴 Yorkshire Dales + York", "entry": "UK trip, so no passport or entry checks needed.", "entryTag": "", "haul": "uk", "kind": "uk", "leadMonths": 3, "passportMonths": null, "stops": [{"nights": 2, "place": "York"}, {"nights": 3, "place": "Grassington"}], "stopsEdited": false, "year": 2029}, "2027-secondary": {"booked": true, "bookedAt": "2026-10-20", "budget": 650, "destination": "🇱🇹 Lithuania", "endDate": "2027-06-06", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "secondary", "leadMonths": 4, "paidCats": {"travel": true}, "passportMonths": 3, "plan": {"stay": 200, "travel": 260}, "startDate": "2027-06-04", "stops": [{"nights": 2, "place": "Vilnius"}], "stopsEdited": true, "year": 2027}, "2036-uk": {"booked": false, "budget": 900, "destination": "🏴 Liverpool + Chester", "entry": "UK trip, so no passport or entry checks needed.", "entryTag": "", "haul": "uk", "kind": "uk", "leadMonths": 3, "passportMonths": null, "stops": [{"nights": 3, "place": "Liverpool"}, {"nights": 2, "place": "Chester"}], "stopsEdited": false, "year": 2036}, "2027-uk2": {"booked": true, "bookedAt": "2026-10-20", "budget": 450, "destination": "🏴 Newcastle", "endDate": "2027-09-12", "entry": "UK trip, so no passport or entry checks needed.", "entryTag": "", "haul": "uk", "kind": "uk", "leadMonths": 3, "passportMonths": null, "startDate": "2027-09-10", "stops": [{"nights": 2, "place": "Newcastle"}], "stopsEdited": false, "year": 2027}, "2030-uk": {"booked": false, "budget": 900, "destination": "🏴 North Wales", "entry": "UK trip, so no passport or entry checks needed.", "entryTag": "", "haul": "uk", "kind": "uk", "leadMonths": 3, "passportMonths": null, "stops": [{"nights": 3, "place": "Betws-y-Coed"}, {"nights": 2, "place": "Conwy"}, {"nights": 2, "place": "Anglesey"}], "stopsEdited": false, "year": 2030}, "2027-uk": {"booked": true, "bookedAt": "2026-10-20", "budget": 750, "destination": "🏴 Cornwall", "endDate": "2027-03-29", "entry": "UK trip, so no passport or entry checks needed.", "entryTag": "", "haul": "uk", "kind": "uk", "leadMonths": 6, "passportMonths": null, "startDate": "2027-03-26", "stops": [{"nights": 3, "place": "St Ives"}, {"nights": 2, "place": "Falmouth"}], "stopsEdited": false, "year": 2027}, "2029-main": {"booked": false, "budget": 3500, "destination": "🇮🇹 Italy + 🇸🇮 Slovenia + 🇭🇷 Croatia", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "main", "leadMonths": 7, "passportMonths": 3, "stops": [{"nights": 2, "place": "Trieste"}, {"nights": 2, "place": "Ljubljana"}, {"nights": 2, "place": "Lake Bled"}, {"nights": 2, "place": "Rovinj"}, {"nights": 3, "place": "Split"}, {"nights": 3, "place": "Dubrovnik"}], "stopsEdited": false, "year": 2029}, "2033-uk": {"booked": false, "budget": 1000, "destination": "🏴 Lake District", "entry": "UK trip, so no passport or entry checks needed.", "entryTag": "", "haul": "uk", "kind": "uk", "leadMonths": 4, "passportMonths": null, "stops": [{"nights": 3, "place": "Keswick"}, {"nights": 3, "place": "Ambleside"}], "stopsEdited": false, "year": 2033}, "2033-secondary": {"booked": false, "budget": 1200, "destination": "🇬🇮 Gibraltar", "entry": "British Overseas Territory. Bring your passport. If you arrive through Spain, allow for Schengen and EES border checks.", "entryTag": "Passport", "haul": "short", "kind": "secondary", "leadMonths": 4, "passportMonths": 0, "stops": [{"nights": 4, "place": "Gibraltar"}], "stopsEdited": false, "year": 2033}, "2032-secondary": {"booked": false, "budget": 1500, "destination": "🇮🇸 Iceland", "entry": "Schengen area. Your passport must be under 10 years old on arrival and valid for 3 months after you leave. Expect EES fingerprint and photo registration at the border, and an ETIAS travel authorisation once it is in force.", "entryTag": "Schengen + ETIAS", "haul": "short", "kind": "secondary", "leadMonths": 5, "passportMonths": 3, "stops": [{"nights": 3, "place": "Reykjavík"}, {"nights": 2, "place": "Vík"}], "stopsEdited": false, "year": 2032}, "2036-secondary": {"booked": false, "budget": 1500, "destination": "🇫🇴 Faroe Islands", "entry": "Not in Schengen or the EU. No visa needed for UK visitors. Your passport must be valid for your stay.", "entryTag": "No visa", "haul": "short", "kind": "secondary", "leadMonths": 5, "passportMonths": 0, "stops": [{"nights": 4, "place": "Tórshavn"}], "stopsEdited": false, "year": 2036}}, "settings": {"anniversary": "2022-08-13", "inflation": 2.5, "lump": 9000, "monthly": 400, "payMonth": 10, "saved": 0, "travellers": []}};
+window.HP_LOCAL_DB = function () {
+  const KEY = "holiday-plan-data-v1";
+  let state;
+  try { state = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+  if (!state || !state.trips) state = JSON.parse(JSON.stringify(window.HP_SEED));
+  const subs = [];
+  const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
+  const merge = (a, b) => { const o = Object.assign({}, a); for (const k in b) { const v = b[k]; o[k] = v && typeof v === "object" && !Array.isArray(v) && a && a[k] && typeof a[k] === "object" && !Array.isArray(a[k]) ? merge(a[k], v) : v; } return o; };
+  const freeze = o => JSON.parse(JSON.stringify(o));
+  function emit() { persist(); subs.forEach(f => f()); }
+  function tripsSnap() { return { docs: Object.keys(state.trips).sort().map(id => ({ id, exists: true, data: () => freeze(state.trips[id]) })) }; }
+  function settingsSnap() { return { exists: !!state.settings, data: () => freeze(state.settings || {}) }; }
+  const api = {
+    collection(name) {
+      return {
+        doc(id) { return { async update(p) { state.trips[id] = merge(state.trips[id] || {}, p); emit(); }, async set(d) { state.trips[id] = d; emit(); } }; },
+        onSnapshot(cb) { const f = () => cb(tripsSnap()); subs.push(f); setTimeout(f, 0); return () => {}; },
+      };
+    },
+    doc(path) {
+      return {
+        async set(d) { state.settings = d; emit(); },
+        async update(p) { state.settings = merge(state.settings || {}, p); emit(); },
+        onSnapshot(cb) { const f = () => cb(settingsSnap()); subs.push(f); setTimeout(f, 0); return () => {}; },
+      };
+    },
+    exportJSON() { return JSON.stringify(state, null, 2); },
+    importJSON(text) { const d = JSON.parse(text); if (!d || !d.trips) throw new Error("Not a holiday plan backup"); state = d; emit(); },
+  };
+  return api;
+};
+</script>
+<script>
+(function () {
+  const BASE = 2026;
+  const KINDS = [
+    { key: "main", label: "Main holiday", lead: 10 },
+    { key: "secondary", label: "Secondary", lead: 4 },
+    { key: "uk", label: "UK holiday", lead: 3 },
+    { key: "anniversary", label: "Anniversary", lead: 3 },
+  ];
+  const kindIndex = Object.fromEntries(KINDS.map((k, i) => [k.key, i]));
+  const kindLabel = Object.fromEntries(KINDS.map(k => [k.key, k.label]));
+  const kindLead = Object.fromEntries(KINDS.map(k => [k.key, k.lead]));
+  const kindVar = { main: "--c-main", secondary: "--c-sec", uk: "--c-uk", anniversary: "--c-ann" };
+  const CATS = [
+    { key: "travel", label: "Getting there", hint: "Flights, trains, fuel" },
+    { key: "stay", label: "Accommodation" },
+    { key: "food", label: "Food & drink" },
+    { key: "activities", label: "Activities & tours" },
+    { key: "local", label: "Getting around", hint: "Car hire, transit, taxis" },
+    { key: "other", label: "Insurance & extras", hint: "Visas, insurance, gifts" },
+  ];
+  const SPLITS = {
+    long:  { travel: 35, stay: 30, food: 15, activities: 10, local: 7, other: 3 },
+    short: { travel: 22, stay: 38, food: 20, activities: 10, local: 5, other: 5 },
+    uk:    { travel: 15, stay: 45, food: 25, activities: 10, local: 0, other: 5 },
+  };
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const gbp = n => "£" + Math.round(n).toLocaleString("en-GB");
+  const num = v => typeof v === "number" && isFinite(v);
+  function parseMoney(v) { const n = parseFloat(String(v).replace(/[£,\s]/g, "")); return isFinite(n) && n >= 0 ? Math.round(n) : null; }
+  function d(s) { if (!s) return null; const [y, m, dd] = s.split("-").map(Number); return y ? new Date(y, (m || 1) - 1, dd || 1) : null; }
+  function iso(dt) { return dt.getFullYear() + "-" + String(dt.getMonth() + 1).padStart(2, "0") + "-" + String(dt.getDate()).padStart(2, "0"); }
+  function addMonths(dt, n) { const r = new Date(dt); r.setMonth(r.getMonth() + n); return r; }
+  function addDays(dt, n) { const r = new Date(dt); r.setDate(r.getDate() + n); return r; }
+  function monthsBetween(a, b) { return (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth()) + (b.getDate() - a.getDate()) / 30.4; }
+  const fmtMonth = dt => dt.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+  const fmtDay = dt => dt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  const fmtDM = dt => dt.toLocaleDateString("en-GB", { day: "numeric", month: "long" });
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+
+  let sampler = null;
+  let db = null, canWrite = true, trips = new Map(), filter = "all", showAllAlerts = false;
+  let settings = { saved: 0, monthly: 0, inflation: 2.5, anniversary: "", travellers: [] };
+  let showInfl = false;
+  const cards = new Map();
+
+  try { const f = localStorage.getItem("hp-filter"); if (f) filter = f; } catch (e) {}
+  try { showInfl = localStorage.getItem("hp-infl") === "1"; } catch (e) {}
+
+  function toast(msg) {
+    const t = $("toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 1800);
+  }
+  function onWriteError(e) {
+    if (e && e.code === "invalid_argument") { canWrite = false; applyWriteState(); toast("You can view this plan but not change it."); }
+    else toast("Couldn't save. Check your connection and try again.");
+  }
+  async function save(id, patch, msg) {
+    if (!db || !canWrite) return;
+    try { await db.collection("trips").doc(id).update(patch); if (msg) toast(msg); } catch (e) { onWriteError(e); }
+  }
+  async function saveSettings(patch, msg) {
+    settings = Object.assign({}, settings, patch);
+    renderAll();
+    if (!db || !canWrite) return;
+    try { await db.doc("settings/plan").set(settings); if (msg) toast(msg); } catch (e) { onWriteError(e); }
+  }
+
+  /* ---------- Derived values ---------- */
+  const infl = y => Math.pow(1 + (num(settings.inflation) ? settings.inflation : 2.5) / 100, Math.max(0, y - BASE));
+  const futureBudget = t => (t.budget || 0) * infl(t.year);
+  const shownBudget = t => showInfl ? futureBudget(t) : (t.budget || 0);
+  const nightsOf = t => (t.stops || []).reduce((s, x) => s + (num(x.nights) ? x.nights : 0), 0);
+  function annivDate(year) { const a = d(settings.anniversary); return a ? new Date(year, a.getMonth(), a.getDate()) : null; }
+  function startOf(t) {
+    if (t.startDate) return d(t.startDate);
+    if (t.kind === "anniversary" && annivDate(t.year)) return addDays(annivDate(t.year), -1);
+    const m = { main: 6, secondary: 4, uk: 7, anniversary: 5 }[t.kind] ?? 6;
+    return new Date(t.year, m, 1);
+  }
+  function endOf(t) { if (t.endDate) return d(t.endDate); return addDays(startOf(t), nightsOf(t) || 7); }
+  const leadOf = t => num(t.leadMonths) ? t.leadMonths : kindLead[t.kind];
+  const payMonth = () => num(settings.payMonth) ? settings.payMonth : 7;
+  const payDate = y => new Date(y, payMonth(), 1);
+  const dueDate = t => { const p = payDate(t.year - 1); return p < today ? today : p; };
+  const bookBy = t => new Date(t.year - 1, payMonth() + 1, 0);
+  const UPFRONT = ["travel", "stay"];
+  function catCost(t, k, sug) {
+    const sp = (t.spend || {})[k], pl = (t.plan || {})[k];
+    if (num(sp)) return sp;
+    return (num(pl) ? pl : sug[k]) * infl(t.year);
+  }
+  function unpaid(t, keys) {
+    if (done(t)) return 0;
+    const sug = suggested(t), pc = t.paidCats || {};
+    return keys.reduce((s, k) => s + (pc[k] ? 0 : catCost(t, k, sug)), 0);
+  }
+  function paidOf(t) {
+    const pc = t.paidCats || {}; if (!Object.values(pc).some(Boolean)) return num(t.paid) ? t.paid : 0;
+    const sug = suggested(t);
+    return CATS.reduce((s, c) => {
+      if (!pc[c.key]) return s;
+      const sp = (t.spend || {})[c.key], pl = (t.plan || {})[c.key];
+      return s + (num(sp) ? sp : num(pl) ? pl : sug[c.key]);
+    }, 0);
+  }
+  function costOf(t) { const a = actualOf(t); return num(a) ? a : (t.budget || 0); }
+  const done = t => endOf(t) < today;
+  function hasAny(o) { return o && Object.values(o).some(num); }
+  function sumObj(o) { return o ? Object.values(o).reduce((s, v) => s + (num(v) ? v : 0), 0) : 0; }
+  function actualOf(t) { if (hasAny(t.spend)) return sumObj(t.spend); return num(t.actual) ? t.actual : null; }
+  function suggested(t) {
+    const split = SPLITS[t.haul || (t.kind === "uk" ? "uk" : "short")];
+    const b = t.budget || 0, out = {}; let used = 0;
+    CATS.forEach((c, i) => { const v = i === CATS.length - 1 ? b - used : Math.round(b * split[c.key] / 100 / 10) * 10; out[c.key] = Math.max(0, v); used += out[c.key]; });
+    return out;
+  }
+  function bookState(t) {
+    if (t.booked || done(t)) return null;
+    const by = bookBy(t), days = (by - today) / 864e5;
+    if (days < 0) return { level: "bad", text: "Book now", by };
+    if (days <= 90) return { level: "warn", text: "Book by " + fmtMonth(by), by };
+    return { level: "", text: "Book by " + fmtMonth(by), by };
+  }
+  function passportProblems(t) {
+    if (t.passportMonths == null) return [];
+    const need = addMonths(endOf(t), t.passportMonths);
+    return (settings.travellers || []).filter(p => p.expiry && d(p.expiry) < need).map(p => p.name || "A traveller");
+  }
+  function clashMap() {
+    const dated = [...trips.values()].filter(t => t.startDate && t.endDate);
+    const m = new Map();
+    for (let i = 0; i < dated.length; i++) for (let j = i + 1; j < dated.length; j++) {
+      const a = dated[i], b = dated[j];
+      if (d(a.startDate) <= d(b.endDate) && d(b.startDate) <= d(a.endDate)) {
+        (m.get(a.id) || m.set(a.id, []).get(a.id)).push(b);
+        (m.get(b.id) || m.set(b.id, []).get(b.id)).push(a);
+      }
+    }
+    return m;
+  }
+  function annivCheck(t) {
+    if (t.kind !== "anniversary") return null;
+    const a = annivDate(t.year); if (!a) return null;
+    if (!t.startDate || !t.endDate) return { ok: null, a };
+    return { ok: d(t.startDate) <= a && a <= d(t.endDate), a };
+  }
+
+  /* ---------- Trip cards ---------- */
+  const stampSvg = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg>';
+
+  function buildCard(t) {
+    const id = t.id;
+    const el = document.createElement("article");
+    el.className = "trip"; el.dataset.kind = t.kind; el.id = "t-" + id;
+    const catRows = CATS.map(c => `
+      <tr><td class="cat">${esc(c.label)}${c.hint ? `<small>${esc(c.hint)}</small>` : ""}</td>
+      <td class="m"><span class="money"><span>£</span><input inputmode="numeric" id="p-${c.key}-${id}" data-cat="${c.key}" data-kind="plan" aria-label="${esc(c.label)} planned"></span></td>
+      <td class="m"><span class="money"><span>£</span><input inputmode="numeric" id="a-${c.key}-${id}" data-cat="${c.key}" data-kind="spend" placeholder="—" aria-label="${esc(c.label)} actual"></span></td>
+      <td class="pc"><input type="checkbox" class="paidbox" id="pc-${c.key}-${id}" data-cat="${c.key}" aria-label="${esc(c.label)} paid"></td></tr>`).join("");
+    el.innerHTML = `
+      <div class="trip-top">
+        <div class="trip-title"><span class="label kind"></span><h3></h3></div>
+        <button type="button" class="book" aria-pressed="false"></button>
+      </div>
+      <div class="chips"></div>
+      <div class="fields">
+        <label class="field"><span class="label">Budget</span><span class="money"><span>£</span><input inputmode="numeric" id="b-${id}" aria-label="Budget"></span><span class="sub infl" hidden></span></label>
+        <label class="field"><span class="label">Actual cost</span><span class="money"><span>£</span><input inputmode="numeric" id="ac-${id}" placeholder="—" aria-label="Actual cost"></span><span class="sub diff" hidden></span></label>
+        <label class="field"><span class="label">From</span><span class="box"><input type="date" id="sd-${id}" aria-label="Start date"></span></label>
+        <label class="field"><span class="label">To</span><span class="box"><input type="date" id="ed-${id}" aria-label="End date"></span></label>
+        <label class="field full"><span class="label">Notes</span><input class="box" id="n-${id}" placeholder="Booking refs, ideas, reminders…"></label>
+      </div>
+      <details class="more" id="m-${id}">
+        <summary>Itinerary &amp; budget breakdown</summary>
+        <div class="more-body">
+          <section>
+            <h4>Route</h4>
+            <p class="hint route-hint"></p>
+            <div class="stops"></div>
+            <button type="button" class="btn add-stop" style="justify-self:start">+ Add stop</button>
+          </section>
+          <section>
+            <h4>Budget breakdown</h4>
+            <div class="table-wrap"><table class="bd">
+              <thead><tr><th>Category</th><th>Planned</th><th>Actual</th><th>Paid</th></tr></thead>
+              <tbody>${catRows}</tbody>
+              <tfoot><tr><td>Total</td><td class="plan-tot"></td><td class="spend-tot"></td><td class="paid-tot"></td></tr></tfoot>
+            </table></div>
+            <div class="bd-foot"><span class="alloc"></span><button type="button" class="btn suggest">Use suggested split</button></div>
+          </section>
+          <section class="wide">
+            <h4>Day by day</h4>
+            <p class="hint days-hint"></p>
+            <div class="days"></div>
+            <div class="days-foot"><button type="button" class="btn draft-days" hidden>Suggest a plan for empty days</button><span class="hint draft-status"></span></div>
+          </section>
+          <section>
+            <h4>Bookings</h4>
+            <label class="field"><span class="label">Flights / travel</span><input class="box" id="fl-${id}" placeholder="Airline, times, reference"></label>
+            <label class="field"><span class="label">Where you're staying</span><input class="box" id="st-${id}" placeholder="Hotels, reference numbers"></label>
+            <div class="fields">
+              <div class="field"><span class="label">Paid so far</span><span class="paid-sum mono" style="padding:7px 0"></span></div>
+            </div>
+            <p class="hint">Tick "Paid" in the breakdown as you pay for each part. Where you haven't entered the actual cost, the planned amount is used.</p>
+          </section>
+          <section>
+            <h4>Entry &amp; passports</h4>
+            <p class="entry-text"></p>
+            <div class="pp-list"></div>
+          </section>
+          <section class="wide">
+            <h4>After the trip</h4>
+            <div style="display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center">
+              <span class="stars" role="group" aria-label="Rating">${[1,2,3,4,5].map(n => `<button type="button" data-n="${n}" aria-label="${n} star${n > 1 ? "s" : ""}">★</button>`).join("")}</span>
+              <input class="box" id="hl-${id}" placeholder="Best moment of the trip" style="flex:1 1 220px">
+            </div>
+          </section>
+        </div>
+      </details>`;
+    const q = s => el.querySelector(s);
+    const r = {
+      kind: q(".kind"), title: q("h3"), book: q(".book"), chips: q(".chips"),
+      budget: q("#b-" + CSS.escape(id)), infl: q(".infl"), actual: q("#ac-" + CSS.escape(id)), diff: q(".diff"),
+      sd: q("#sd-" + CSS.escape(id)), ed: q("#ed-" + CSS.escape(id)), notes: q("#n-" + CSS.escape(id)),
+      details: q("details"), routeHint: q(".route-hint"), stops: q(".stops"), addStop: q(".add-stop"),
+      planTot: q(".plan-tot"), spendTot: q(".spend-tot"), alloc: q(".alloc"), suggest: q(".suggest"),
+      fl: q("#fl-" + CSS.escape(id)), st: q("#st-" + CSS.escape(id)), paidSum: q(".paid-sum"), paidTot: q(".paid-tot"), paidBoxes: [...el.querySelectorAll(".paidbox")],
+      entry: q(".entry-text"), pp: q(".pp-list"), stars: [...el.querySelectorAll(".stars button")], hl: q("#hl-" + CSS.escape(id)),
+      catInputs: [...el.querySelectorAll("table.bd input[data-kind]")], stopsKey: null,
+      days: q(".days"), daysHint: q(".days-hint"), draft: q(".draft-days"), draftStatus: q(".draft-status"), daysKey: null,
+    };
+    const cur = () => trips.get(id);
+
+    r.book.addEventListener("click", () => {
+      const t = cur(); if (!t) return;
+      const next = !t.booked;
+      save(id, { booked: next, bookedAt: next ? iso(new Date()) : null }, next ? t.destination + " marked booked" : t.destination + " marked not booked");
+    });
+    function moneyField(input, field, label, allowEmpty) {
+      input.addEventListener("change", () => {
+        const t = cur(); const raw = input.value.trim();
+        const n = raw === "" ? null : parseMoney(raw);
+        if ((raw !== "" && n === null) || (!allowEmpty && n === null)) { input.value = t[field] ?? ""; toast(label + " must be a number"); return; }
+        if (n !== (t[field] ?? null)) save(id, { [field]: n }, label + " saved");
+      });
+    }
+    moneyField(r.budget, "budget", "Budget", false);
+    moneyField(r.actual, "actual", "Actual cost", true);
+    r.paidBoxes.forEach(b => b.addEventListener("change", () => {
+      const label = CATS.find(c => c.key === b.dataset.cat).label;
+      save(id, { paidCats: { [b.dataset.cat]: b.checked } }, label + (b.checked ? " marked paid" : " marked unpaid"));
+    }));
+    function textField(input, field, label) {
+      input.addEventListener("change", () => { const t = cur(); const v = input.value.trim(); if (v !== (t[field] || "")) save(id, { [field]: v }, label + " saved"); });
+    }
+    textField(r.notes, "notes", "Note"); textField(r.fl, "flightsInfo", "Travel details"); textField(r.st, "stayInfo", "Accommodation details"); textField(r.hl, "highlight", "Highlight");
+    function dateField(input, field) {
+      input.addEventListener("change", () => {
+        const t = cur(); const v = input.value || null;
+        const patch = { [field]: v };
+        if (field === "startDate" && v && (!t.endDate || t.endDate < v)) {
+          const n = nightsOf(t) || 7; patch.endDate = iso(addDays(d(v), n));
+        }
+        if (field === "endDate" && v && t.startDate && v < t.startDate) { input.value = t.endDate || ""; toast("End date can't be before the start date"); return; }
+        if (v !== (t[field] || null)) save(id, patch, "Dates saved");
+      });
+    }
+    dateField(r.sd, "startDate"); dateField(r.ed, "endDate");
+    r.catInputs.forEach(inp => inp.addEventListener("change", () => {
+      const t = cur(); const field = inp.dataset.kind, cat = inp.dataset.cat;
+      const raw = inp.value.trim(); const n = raw === "" ? null : parseMoney(raw);
+      if (raw !== "" && n === null) { inp.value = (t[field] || {})[cat] ?? ""; toast("Enter an amount in pounds"); return; }
+      if (n !== ((t[field] || {})[cat] ?? null)) save(id, { [field]: { [cat]: n } }, field === "plan" ? "Plan updated" : "Spending saved");
+    }));
+    r.suggest.addEventListener("click", () => { const t = cur(); save(id, { plan: suggested(t) }, "Suggested split applied"); });
+    function readStops() {
+      return [...r.stops.querySelectorAll(".stop")].map(row => ({
+        place: row.querySelector(".pl").value.trim(),
+        nights: Math.max(0, parseInt(row.querySelector(".nt").value, 10) || 0),
+      }));
+    }
+    r.stops.addEventListener("change", () => save(id, { stops: readStops(), stopsEdited: true }, "Route saved"));
+    r.stops.addEventListener("click", e => {
+      const b = e.target.closest(".rm"); if (!b) return;
+      const arr = readStops(); arr.splice(+b.dataset.i, 1);
+      save(id, { stops: arr, stopsEdited: true }, "Stop removed");
+    });
+    r.addStop.addEventListener("click", () => {
+      const arr = readStops(); arr.push({ place: "", nights: 1 });
+      r.stopsKey = null;
+      save(id, { stops: arr, stopsEdited: true }).then(() => {
+        const last = r.stops.querySelector(".stop:last-child .pl"); if (last) last.focus();
+      });
+    });
+    r.stars.forEach(b => b.addEventListener("click", () => {
+      const t = cur(); const n = +b.dataset.n;
+      save(id, { rating: t.rating === n ? null : n }, t.rating === n ? "Rating cleared" : "Rated " + n + " out of 5");
+    }));
+    function readDays() {
+      const t = cur(); const arr = (t.days || []).slice();
+      r.days.querySelectorAll("textarea").forEach(ta => { arr[+ta.dataset.i] = ta.value.trim(); });
+      for (let i = 0; i < arr.length; i++) if (arr[i] == null) arr[i] = "";
+      return arr;
+    }
+    r.days.addEventListener("change", () => save(id, { days: readDays() }, "Day plan saved"));
+    r.draft.addEventListener("click", () => draftDays(id, r));
+    r.details.addEventListener("toggle", () => el.classList.toggle("open", r.details.open));
+    [r.budget, r.actual, r.notes, r.fl, r.st, r.hl, ...r.catInputs].forEach(inp => inp.addEventListener("keydown", e => { if (e.key === "Enter") inp.blur(); }));
+    return { el, r };
+  }
+
+  function setVal(input, v) { if (document.activeElement !== input) input.value = v ?? ""; }
+
+  function renderStops(c, t) {
+    const r = c.r; const stops = t.stops || [];
+    const key = JSON.stringify(stops) + "|" + canWrite;
+    if (key === r.stopsKey || r.stops.contains(document.activeElement)) return;
+    r.stopsKey = key;
+    r.stops.innerHTML = stops.length ? stops.map((s, i) => `
+      <div class="stop">
+        <input class="box pl" id="sp-${i}-${esc(t.id)}" value="${esc(s.place)}" placeholder="Place" aria-label="Stop ${i + 1} place" ${canWrite ? "" : "disabled"}>
+        <span class="n"><input class="nt" id="sn-${i}-${esc(t.id)}" inputmode="numeric" value="${num(s.nights) ? s.nights : 0}" aria-label="Stop ${i + 1} nights" ${canWrite ? "" : "disabled"}><span>nights</span></span>
+        <button type="button" class="icon-btn rm" data-i="${i}" aria-label="Remove stop ${i + 1}" ${canWrite ? "" : "disabled"}>×</button>
+      </div>`).join("") : `<p class="hint">No stops yet. Add the places you'll stay.</p>`;
+  }
+
+  function dayList(t) {
+    const stops = (t.stops || []).filter(x => x.place || x.nights);
+    const nightPlaces = [];
+    stops.forEach(x => { for (let n = 0; n < (num(x.nights) ? x.nights : 0); n++) nightPlaces.push(x.place || "—"); });
+    let count;
+    if (t.startDate && t.endDate) count = Math.round((d(t.endDate) - d(t.startDate)) / 864e5) + 1;
+    else count = nightPlaces.length ? nightPlaces.length + 1 : 1;
+    count = Math.max(1, Math.min(count, 45));
+    const out = [];
+    for (let i = 0; i < count; i++) {
+      const tonight = nightPlaces[i], last = nightPlaces[i - 1];
+      let where;
+      if (i === 0) where = tonight ? "Arrive in " + tonight : "";
+      else if (i === count - 1 && !tonight) where = last ? "Leave " + last + ", travel home" : "Travel home";
+      else if (tonight && last && tonight !== last) where = last + " → " + tonight;
+      else where = tonight || last || "";
+      out.push({ i, date: t.startDate ? addDays(d(t.startDate), i) : null, where });
+    }
+    return out;
+  }
+  function renderDays(c, t) {
+    const r = c.r; const list = dayList(t);
+    const key = JSON.stringify([list.map(x => [x.where, x.date && +x.date]), t.days || [], canWrite]);
+    if (key === r.daysKey || r.days.contains(document.activeElement)) return;
+    r.daysKey = key;
+    r.daysHint.textContent = (t.startDate ? "" : "Add dates to see the day of the week. ") + "Days follow your route above.";
+    r.days.innerHTML = list.map(x => `
+      <div class="day">
+        <div class="day-head"><b>Day ${x.i + 1}</b>${x.date ? `<span>${esc(x.date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }))}</span>` : ""}${x.where ? `<span class="where">${esc(x.where)}</span>` : ""}</div>
+        <textarea id="dy-${x.i}-${esc(t.id)}" data-i="${x.i}" rows="2" placeholder="Plans for the day" aria-label="Day ${x.i + 1} plan" ${canWrite ? "" : "disabled"}>${esc((t.days || [])[x.i] || "")}</textarea>
+      </div>`).join("");
+    r.draft.hidden = !sampler || !canWrite;
+  }
+  async function draftDays(id, r) {
+    const t = trips.get(id); if (!t || !sampler) return;
+    const list = dayList(t), existing = t.days || [];
+    const empty = list.filter(x => !(existing[x.i] || "").trim());
+    if (!empty.length) { r.draftStatus.textContent = "Every day already has a plan."; return; }
+    r.draft.disabled = true; r.draftStatus.textContent = "Drafting…";
+    const lines = list.map(x => `Day ${x.i + 1}${x.date ? " (" + x.date.toDateString() + ")" : ""}: ${x.where || "unspecified"}${(existing[x.i] || "").trim() ? " — already planned: " + existing[x.i] : ""}`).join("\n");
+    const prompt = `You are helping a UK couple plan a holiday: ${t.destination.replace(/[^\p{L}\p{N}\s+&,'-]/gu, "").trim()} in ${t.year} (${kindLabel[t.kind]} trip, budget about £${t.budget}).
+Here is the day-by-day outline with where they are each day:
+${lines}
+
+Write a short plan for each day: 1-2 sentences, under 35 words, naming specific sights, walks or food to try, realistic for the travel that day. Keep any day marked "already planned" exactly as it is.
+Reply with only a JSON array of ${list.length} strings, one per day in order.`;
+    try {
+      const out = await sampler.json(prompt, { modelTier: "default" });
+      if (!Array.isArray(out)) throw new Error("bad");
+      const cur = trips.get(id); const arr = (cur.days || []).slice();
+      list.forEach(x => { if (!(arr[x.i] || "").trim() && typeof out[x.i] === "string") arr[x.i] = out[x.i].trim(); });
+      for (let i = 0; i < arr.length; i++) if (arr[i] == null) arr[i] = "";
+      r.daysKey = null;
+      await save(id, { days: arr }, "Day plan drafted");
+      r.draftStatus.textContent = "Drafted. Edit any day you like.";
+    } catch (e) {
+      r.draftStatus.textContent = e && e.code === "not_granted" ? "Suggestions aren't available here." : e && e.code === "rate_limited" ? "Too many requests. Try again in a minute." : "Couldn't draft a plan. Try again.";
+    } finally { r.draft.disabled = false; }
+  }
+
+  function updateCard(c, t, clashes) {
+    const r = c.r;
+    r.kind.textContent = kindLabel[t.kind] || t.kind;
+    r.title.textContent = t.destination;
+    r.book.setAttribute("aria-pressed", t.booked ? "true" : "false");
+    r.book.innerHTML = t.booked ? stampSvg + "Booked" : "Mark booked";
+    r.book.title = t.booked && t.bookedAt ? "Booked " + fmtDay(d(t.bookedAt)) : "";
+
+    // Chips
+    const chips = [];
+    if (t.startDate && t.endDate) {
+      const days = Math.round((d(t.startDate) - today) / 864e5);
+      const n = Math.round((d(t.endDate) - d(t.startDate)) / 864e5);
+      chips.push(`<span class="chip">${esc(fmtDay(d(t.startDate)))} · ${n} night${n === 1 ? "" : "s"}</span>`);
+      if (days > 0 && days <= 365) chips.push(`<span class="chip ok">in ${days} day${days === 1 ? "" : "s"}</span>`);
+    } else chips.push(`<span class="chip">Dates not set</span>`);
+    const bs = bookState(t); if (bs) chips.push(`<span class="chip ${bs.level}">${esc(bs.text)}</span>`);
+    if (!done(t) && unpaid(t, UPFRONT) === 0) chips.push(`<span class="chip ok">Flights &amp; hotels paid</span>`);
+    const cl = clashes.get(t.id); if (cl) chips.push(`<span class="chip bad">Clashes with ${esc(cl.map(x => x.destination.replace(/^[^A-Za-z]+/, "")).join(", "))}</span>`);
+    const pp = passportProblems(t); if (pp.length) chips.push(`<span class="chip bad">Passport: ${esc(pp.join(", "))}</span>`);
+    const an = annivCheck(t); if (an && an.ok === false) chips.push(`<span class="chip warn">Misses anniversary (${esc(fmtDM(an.a))})</span>`);
+    if (an && an.ok === true) chips.push(`<span class="chip ok">On your anniversary</span>`);
+    if (t.entryTag) chips.push(`<span class="chip">${esc(t.entryTag)}</span>`);
+    if (num(t.rating)) chips.push(`<span class="chip star">${"★".repeat(t.rating)}</span>`);
+    r.chips.innerHTML = chips.join("");
+
+    // Main fields
+    setVal(r.budget, t.budget);
+    if (showInfl && t.year > BASE) { r.infl.hidden = false; r.infl.textContent = "≈ " + gbp(futureBudget(t)) + " in " + t.year + " prices"; } else r.infl.hidden = true;
+    const fromBreakdown = hasAny(t.spend);
+    const act = actualOf(t);
+    if (fromBreakdown) { r.actual.value = act; r.actual.disabled = true; r.actual.title = "Calculated from the spending breakdown"; }
+    else { r.actual.disabled = !canWrite; r.actual.title = ""; setVal(r.actual, t.actual); }
+    if (num(act) && num(t.budget)) {
+      const df = act - t.budget; r.diff.hidden = false;
+      r.diff.className = "sub diff " + (df > 0 ? "over" : "under");
+      r.diff.textContent = (df === 0 ? "Exactly on budget" : df > 0 ? gbp(df) + " over budget" : gbp(-df) + " under budget") + (fromBreakdown ? " · from breakdown" : "");
+    } else if (fromBreakdown) { r.diff.hidden = false; r.diff.className = "sub diff"; r.diff.textContent = "From breakdown"; }
+    else r.diff.hidden = true;
+    setVal(r.sd, t.startDate); setVal(r.ed, t.endDate);
+    setVal(r.notes, t.notes);
+
+    // Route
+    const nights = nightsOf(t);
+    let hint = nights ? `${nights} night${nights === 1 ? "" : "s"} across ${(t.stops || []).length} stop${(t.stops || []).length === 1 ? "" : "s"}` : "";
+    if (t.startDate && t.endDate) {
+      const span = Math.round((d(t.endDate) - d(t.startDate)) / 864e5);
+      if (nights && span !== nights) hint += ` · your dates cover ${span} night${span === 1 ? "" : "s"}`;
+    }
+    if (t.stops && t.stops.length && !t.stopsEdited) hint += (hint ? " · " : "") + "suggested route, change it however you like";
+    r.routeHint.textContent = hint;
+    r.routeHint.hidden = !hint;
+    renderStops(c, t);
+    renderDays(c, t);
+
+    // Breakdown
+    const sug = suggested(t); const planned = hasAny(t.plan);
+    r.catInputs.forEach(inp => {
+      const o = t[inp.dataset.kind] || {}; setVal(inp, num(o[inp.dataset.cat]) ? o[inp.dataset.cat] : "");
+      if (inp.dataset.kind === "plan") inp.placeholder = planned ? "0" : String(sug[inp.dataset.cat]);
+    });
+    const pt = sumObj(t.plan), stt = sumObj(t.spend);
+    r.planTot.textContent = planned ? gbp(pt) : "—";
+    r.spendTot.textContent = hasAny(t.spend) ? gbp(stt) : "—";
+    if (!planned) { r.alloc.className = "alloc"; r.alloc.textContent = "Grey figures are a suggested split of " + gbp(t.budget || 0); }
+    else {
+      const left = (t.budget || 0) - pt;
+      r.alloc.className = "alloc " + (left < 0 ? "over" : left === 0 ? "ok" : "left");
+      r.alloc.textContent = left === 0 ? "Whole budget allocated" : left > 0 ? gbp(left) + " not yet allocated" : gbp(-left) + " more than the budget";
+    }
+    r.suggest.hidden = planned && pt === (t.budget || 0) && JSON.stringify(t.plan) === JSON.stringify(sug);
+
+    // Bookings
+    setVal(r.fl, t.flightsInfo); setVal(r.st, t.stayInfo);
+    r.paidBoxes.forEach(b => { b.checked = !!(t.paidCats && t.paidCats[b.dataset.cat]); });
+    const paid = paidOf(t), cost = costOf(t);
+    r.paidTot.textContent = paid ? gbp(paid) : "—";
+    r.paidSum.textContent = paid >= cost && paid > 0 ? gbp(paid) + " · fully paid" : gbp(paid) + " of " + gbp(cost);
+
+    // Entry
+    r.entry.textContent = t.entry || "No entry information yet.";
+    if (t.passportMonths == null) r.pp.innerHTML = `<span class="hint">No passport check needed for this trip.</span>`;
+    else {
+      const need = addMonths(endOf(t), t.passportMonths);
+      const trav = settings.travellers || [];
+      const lines = [`<span class="hint">Passports must be valid until at least ${esc(fmtDay(need))}${t.endDate ? "" : " (estimated, set dates for an exact check)"}.</span>`];
+      if (!trav.some(p => p.expiry)) lines.push(`<span class="hint">Add passport expiry dates in Plan settings to check them.</span>`);
+      trav.filter(p => p.expiry).forEach(p => {
+        const ok = d(p.expiry) >= need;
+        lines.push(`<span class="${ok ? "ok" : "bad"}">${ok ? "✓" : "✗"} ${esc(p.name || "Traveller")}: expires ${esc(fmtDay(d(p.expiry)))}${ok ? "" : ", renew before this trip"}</span>`);
+      });
+      r.pp.innerHTML = lines.join("");
+    }
+
+    // Rating
+    r.stars.forEach(b => b.classList.toggle("on", num(t.rating) && +b.dataset.n <= t.rating));
+    setVal(r.hl, t.highlight);
+
+    c.el.hidden = (filter === "todo" && t.booked) || (filter === "done" && !t.booked);
+  }
+
+  function applyWriteState() {
+    cards.forEach(c => {
+      c.el.querySelectorAll("input, .book, .btn, .stars button, .icon-btn").forEach(x => { if (x !== c.r.actual) x.disabled = !canWrite; });
+      c.r.stopsKey = null; c.r.daysKey = null;
+    });
+    document.querySelectorAll(".settings input, .sv-inputs input, .sv-inputs select, #add-traveller").forEach(x => { if (x.id !== "set-showinfl") x.disabled = !canWrite; });
+  }
+
+  /* ---------- Page sections ---------- */
+  function byYear() {
+    const m = new Map();
+    [...trips.values()].sort((a, b) => a.year - b.year || kindIndex[a.kind] - kindIndex[b.kind] || (a.id < b.id ? -1 : 1))
+      .forEach(t => { if (!m.has(t.year)) m.set(t.year, []); m.get(t.year).push(t); });
+    return m;
+  }
+
+  function jumpTo(id) {
+    const c = cards.get(id); if (!c) return;
+    if (c.el.hidden) setFilter("all");
+    c.el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function renderAlerts(list, clashes) {
+    const items = [];
+    list.forEach(t => {
+      const bs = bookState(t);
+      if (bs && bs.level === "bad") items.push({ p: 0, cls: "bad", tag: "Book now", t, text: `Usually booked by ${fmtMonth(bs.by)}, so this is due now.` });
+      else if (bs && bs.level === "warn") items.push({ p: 1, cls: "warn", tag: "Book soon", t, text: `Book by ${fmtMonth(bs.by)}.` });
+      const pp = passportProblems(t);
+      if (pp.length) items.push({ p: 0, cls: "bad", tag: "Passport", t, text: `${pp.join(" and ")} need${pp.length === 1 ? "s" : ""} a passport valid until ${fmtDay(addMonths(endOf(t), t.passportMonths))}.` });
+      const an = annivCheck(t);
+      if (an && an.ok === false) items.push({ p: 2, cls: "warn", tag: "Anniversary", t, text: `These dates miss your anniversary on ${fmtDM(an.a)}.` });
+    });
+    const seen = new Set();
+    clashes.forEach((others, id) => others.forEach(o => {
+      const k = [id, o.id].sort().join("|"); if (seen.has(k)) return; seen.add(k);
+      items.push({ p: 0, cls: "bad", tag: "Clash", t: trips.get(id), text: `Dates overlap with ${o.destination}.` });
+    }));
+    items.sort((a, b) => a.p - b.p || startOf(a.t) - startOf(b.t));
+    const ul = $("alerts");
+    $("alerts-count").textContent = items.length ? `${items.length} item${items.length === 1 ? "" : "s"}` : "";
+    if (!items.length) { ul.innerHTML = `<li><span class="tag ok">All clear</span><span>Nothing needs booking in the next three months, and no clashes or passport problems.</span></li>`; $("alerts-more").hidden = true; return; }
+    const shown = showAllAlerts ? items : items.slice(0, 6);
+    ul.innerHTML = shown.map((it, i) => `<li><span class="tag ${it.cls}">${esc(it.tag)}</span><span><a data-id="${esc(it.t.id)}">${esc(it.t.year)} ${esc(it.t.destination)}</a>. ${esc(it.text)}</span></li>`).join("");
+    ul.querySelectorAll("a[data-id]").forEach(a => a.addEventListener("click", () => jumpTo(a.dataset.id)));
+    const more = $("alerts-more");
+    more.hidden = items.length <= 6;
+    more.textContent = showAllAlerts ? "Show fewer" : `Show all ${items.length}`;
+  }
+
+  function moneyPlan(list) {
+    const saved = num(settings.saved) ? settings.saved : 0;
+    const monthly = num(settings.monthly) ? settings.monthly : 0;
+    const lump = num(settings.lump) ? settings.lump : 0;
+    const years = [...new Set(list.map(t => t.year))].sort((a, b) => a - b);
+    if (!years.length) return { rows: [], saved, monthly, lump, markingNeeded: 0, firstShort: null };
+    const last = years[years.length - 1];
+    const pay = payDate(BASE);
+    const lumpThisYear = today <= new Date(BASE, payMonth() + 1, 0);
+    const rows = []; let carry = saved, cumNeed = 0, cumMonthly = 0, lumps = 0, markingNeeded = 0, firstShort = null, overdueShort = 0;
+    for (let X = BASE; X <= last; X++) {
+      const upfront = list.filter(t => t.year === X + 1).reduce((s, t) => s + unpaid(t, UPFRONT), 0);
+      const spending = list.filter(t => t.year === X).reduce((s, t) => s + unpaid(t, CATS.map(c => c.key).filter(k => !UPFRONT.includes(k))), 0);
+      const need = upfront + spending;
+      const months = X === BASE ? Math.max(0, monthsBetween(today, new Date(X, 11, 31))) : 12;
+      const put = monthly * months;
+      const gotLump = X === BASE ? lumpThisYear : true;
+      const income = put + (gotLump ? lump : 0);
+      carry = carry + income - need;
+      cumNeed += need; cumMonthly += put; if (gotLump) lumps++;
+      const gap = cumNeed - saved - cumMonthly;
+      if (gap > 0) { if (lumps) markingNeeded = Math.max(markingNeeded, gap / lumps); else overdueShort = Math.max(overdueShort, gap); }
+      if (carry < -0.5 && !firstShort) firstShort = { year: X, amount: -carry };
+      rows.push({ X, upfront, spending, need, income, put, gotLump, carry });
+    }
+    return { rows, saved, monthly, lump, markingNeeded, firstShort, overdueShort };
+  }
+
+  function renderSavings(list) {
+    const M = moneyPlan(list);
+    setVal($("set-saved"), settings.saved || ""); setVal($("set-monthly"), settings.monthly || ""); setVal($("set-lump"), settings.lump || "");
+    const sel = $("set-paymonth");
+    if (!sel.options.length) for (let m = 0; m < 12; m++) sel.add(new Option(new Date(2026, m, 1).toLocaleDateString("en-GB", { month: "long" }), m));
+    if (document.activeElement !== sel) sel.value = String(payMonth());
+    $("sv-basis").textContent = `Future years allow for ${num(settings.inflation) ? settings.inflation : 2.5}% inflation`;
+    const v = $("sv-verdict");
+    if (!M.rows.length) { v.className = "sv-verdict info"; v.textContent = "Your money plan will appear once the trips load."; }
+    else if (!M.monthly && !M.lump && !M.saved) { v.className = "sv-verdict info"; v.textContent = "Enter your monthly saving and marking money to check each year."; }
+    else if (M.firstShort) {
+      v.className = "sv-verdict bad";
+      v.textContent = `You'd be ${gbp(M.firstShort.amount)} short in ${M.firstShort.year}.` + (M.markingNeeded ? ` About ${gbp(Math.ceil(M.markingNeeded / 50) * 50)} of marking money each summer would cover every year.` : "");
+    } else { v.className = "sv-verdict ok"; v.textContent = "On track. Your monthly saving and marking money cover every year's bookings and spending money."; }
+    const tb = $("mt").querySelector("tbody");
+    tb.innerHTML = M.rows.map(r => `<tr class="${r.X === BASE ? "now" : ""}">
+      <td>${r.X}${r.X === BASE ? "<small>rest of this year</small>" : ""}</td>
+      <td>${r.upfront ? gbp(r.upfront) : "—"}</td>
+      <td>${r.spending ? gbp(r.spending) : "—"}</td>
+      <td>${gbp(r.need)}</td>
+      <td>${gbp(r.income)}${r.gotLump && M.lump ? "" : r.X === BASE && M.lump ? "<small style=\"display:block;color:var(--muted);font-size:12px;font-family:var(--font-body)\">marking already in</small>" : ""}</td>
+      <td class="bal ${r.carry < -0.5 ? "neg" : "pos"}">${r.carry < -0.5 ? "−" + gbp(-r.carry) : gbp(r.carry)}</td></tr>`).join("");
+    // Summary stats
+    const thisYear = M.rows.find(r => r.X === BASE);
+    const due = thisYear ? thisYear.need : 0;
+    $("s-due-label").textContent = `Still to pay for ${BASE + 1}`;
+    $("s-due").textContent = M.rows.length ? gbp(list.filter(t => t.year === BASE + 1).reduce((s, t) => s + unpaid(t, UPFRONT), 0)) : "—";
+    $("s-due-sub").textContent = "flights & hotels not yet ticked paid";
+    $("s-mark").textContent = M.rows.length ? gbp(Math.ceil(M.markingNeeded / 50) * 50) : "—";
+    $("s-mark-sub").textContent = M.monthly ? `each summer, with ${gbp(M.monthly)} a month` : "each summer, if you don't save monthly";
+  }
+  function niceStep(raw) { const p = Math.pow(10, Math.floor(Math.log10(raw))); const n = raw / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p; }
+
+  function renderSettings() {
+    $("set-showinfl").checked = showInfl;
+    setVal($("set-infl"), num(settings.inflation) ? settings.inflation : "");
+    setVal($("set-anniv"), settings.anniversary);
+    const a = d(settings.anniversary);
+    $("anniv-hint").textContent = a ? `Anniversary trips are checked against ${fmtDM(a)} each year.` : "Used to check that each anniversary trip includes the day.";
+    const box = $("travellers");
+    if (box.contains(document.activeElement)) return;
+    const tr = settings.travellers || [];
+    box.innerHTML = tr.length ? tr.map((p, i) => `
+      <div class="traveller">
+        <input class="box tn" id="tn-${i}" value="${esc(p.name)}" placeholder="Name" aria-label="Traveller ${i + 1} name" ${canWrite ? "" : "disabled"}>
+        <span class="box"><input type="date" class="te" id="te-${i}" value="${esc(p.expiry)}" aria-label="Traveller ${i + 1} passport expiry" ${canWrite ? "" : "disabled"}></span>
+        <button type="button" class="icon-btn rm" data-i="${i}" aria-label="Remove traveller ${i + 1}" ${canWrite ? "" : "disabled"}>×</button>
+      </div>`).join("") : `<p class="hint">No passports added yet.</p>`;
+  }
+  function readTravellers() { return [...$("travellers").querySelectorAll(".traveller")].map(r => ({ name: r.querySelector(".tn").value.trim(), expiry: r.querySelector(".te").value || "" })); }
+
+  function renderRatings(list) {
+    const rated = list.filter(t => num(t.rating)).sort((a, b) => b.rating - a.rating || a.year - b.year);
+    $("ratings-panel").hidden = !rated.length;
+    $("ratings").innerHTML = rated.map(t => `<li><span class="st">${"★".repeat(t.rating)}</span><span><a class="ext-link" style="color:var(--ink);cursor:pointer" data-id="${esc(t.id)}">${esc(t.year)} ${esc(t.destination)}</a>${t.highlight ? `<small>${esc(t.highlight)}</small>` : ""}</span></li>`).join("");
+    $("ratings").querySelectorAll("a[data-id]").forEach(a => a.addEventListener("click", () => jumpTo(a.dataset.id)));
+  }
+
+  let builtKey = "";
+  function renderAll() {
+    const years = byYear();
+    const list = [...trips.values()];
+    const key = [...trips.keys()].sort().join("|");
+    const container = $("years");
+    const clashes = clashMap();
+
+    if (!list.length) {
+      if (db) { container.innerHTML = '<div class="empty">No trips in the plan yet.</div>'; cards.clear(); builtKey = ""; }
+    } else if (key !== builtKey) {
+      container.innerHTML = ""; cards.clear();
+      years.forEach((ts, y) => {
+        const sec = document.createElement("section");
+        sec.className = "year"; sec.id = "y" + y;
+        sec.innerHTML = `<div class="year-head"><h2>${y}</h2><div class="meta"></div></div><div class="trips"></div>`;
+        const grid = sec.querySelector(".trips");
+        ts.forEach(t => { const c = buildCard(t); cards.set(t.id, c); grid.appendChild(c.el); });
+        container.appendChild(sec);
+      });
+      builtKey = key;
+      applyWriteState();
+    }
+    list.forEach(t => { const c = cards.get(t.id); if (c) updateCard(c, t, clashes); });
+
+    years.forEach((ts, y) => {
+      const sec = document.getElementById("y" + y); if (!sec) return;
+      const total = ts.reduce((s, t) => s + shownBudget(t), 0);
+      const booked = ts.filter(t => t.booked).length;
+      const spent = ts.map(actualOf).filter(num);
+      let html = `<span>Budget <b>${gbp(total)}</b></span><span><b>${booked}/${ts.length}</b> booked</span>`;
+      if (spent.length) html += `<span>Spent <b>${gbp(spent.reduce((s, v) => s + v, 0))}</b></span>`;
+      sec.querySelector(".meta").innerHTML = html;
+      sec.hidden = ts.every(t => (filter === "todo" && t.booked) || (filter === "done" && !t.booked));
+    });
+
+    // Summary
+    const bookedList = list.filter(t => t.booked);
+    $("s-booked").textContent = list.length ? `${bookedList.length} / ${list.length}` : "—";
+    $("s-booked-bar").style.width = list.length ? (bookedList.length / list.length * 100) + "%" : "0";
+    const withAct = bookedList.filter(t => num(actualOf(t)));
+    if (withAct.length) {
+      const a = withAct.reduce((s, t) => s + actualOf(t), 0), b = withAct.reduce((s, t) => s + (t.budget || 0), 0);
+      $("s-booked-sub").textContent = `Booked trips cost ${gbp(a)} vs ${gbp(b)} budget`;
+    } else $("s-booked-sub").textContent = bookedList.length ? "Add actual costs to compare with budget" : "";
+    const dated = list.filter(t => t.startDate && d(t.startDate) >= today).sort((a, b) => d(a.startDate) - d(b.startDate));
+    if (dated.length) {
+      const n = dated[0], days = Math.round((d(n.startDate) - today) / 864e5);
+      $("s-next").textContent = n.destination;
+      $("s-next-sub").textContent = days === 0 ? "Today!" : `${days} day${days === 1 ? "" : "s"} to go · ${fmtDay(d(n.startDate))}`;
+    } else {
+      const n = list.filter(t => !done(t)).sort((a, b) => startOf(a) - startOf(b))[0];
+      $("s-next").textContent = n ? n.destination : "—";
+      $("s-next-sub").textContent = n ? `${n.year} · add dates to start the countdown` : "";
+    }
+
+    renderAlerts(list, clashes);
+    renderSavings(list);
+    renderSettings();
+    renderRatings(list);
+
+    // Annual chart
+    const max = Math.max(1, ...[...years.values()].map(ts => ts.reduce((s, t) => s + shownBudget(t), 0)));
+    const chart = $("chart"); chart.innerHTML = "";
+    years.forEach((ts, y) => {
+      const tot = ts.reduce((s, t) => s + shownBudget(t), 0);
+      const yb = document.createElement("button"); yb.type = "button"; yb.className = "yr"; yb.textContent = y;
+      yb.addEventListener("click", () => document.getElementById("y" + y)?.scrollIntoView({ behavior: "smooth", block: "start" }));
+      const bar = document.createElement("div"); bar.className = "bar"; bar.style.width = (tot / max * 100) + "%";
+      ts.forEach(t => {
+        const i = document.createElement("i");
+        i.style.width = (tot ? shownBudget(t) / tot * 100 : 0) + "%";
+        i.style.background = `var(${kindVar[t.kind] || "--accent"})`;
+        if (!t.booked) i.className = "unbooked";
+        i.title = `${t.destination} · ${gbp(shownBudget(t))}${t.booked ? " · booked" : ""}`;
+        bar.appendChild(i);
+      });
+      const tt = document.createElement("span"); tt.className = "tot"; tt.textContent = gbp(tot);
+      chart.append(yb, bar, tt);
+    });
+
+    if (db && !db.exportJSON) $("status").textContent = list.length ? (canWrite ? "Changes save automatically" : "View only") : "";
+  }
+
+  /* ---------- Global controls ---------- */
+  function setFilter(f) {
+    filter = f;
+    document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.f === f ? "true" : "false"));
+    try { localStorage.setItem("hp-filter", f); } catch (e) {}
+    renderAll();
+  }
+  document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => setFilter(b.dataset.f)));
+  $("alerts-more").addEventListener("click", () => { showAllAlerts = !showAllAlerts; renderAll(); });
+  $("set-showinfl").addEventListener("change", e => { showInfl = e.target.checked; try { localStorage.setItem("hp-infl", showInfl ? "1" : "0"); } catch (x) {} renderAll(); });
+  $("set-saved").addEventListener("change", e => { const n = e.target.value.trim() === "" ? 0 : parseMoney(e.target.value); if (n === null) { toast("Enter an amount in pounds"); e.target.value = settings.saved || ""; return; } saveSettings({ saved: n }, "Savings updated"); });
+  $("set-monthly").addEventListener("change", e => { const n = e.target.value.trim() === "" ? 0 : parseMoney(e.target.value); if (n === null) { toast("Enter an amount in pounds"); e.target.value = settings.monthly || ""; return; } saveSettings({ monthly: n }, "Monthly saving updated"); });
+  $("set-lump").addEventListener("change", e => { const n = e.target.value.trim() === "" ? 0 : parseMoney(e.target.value); if (n === null) { toast("Enter an amount in pounds"); e.target.value = settings.lump || ""; return; } saveSettings({ lump: n }, "Marking money updated"); });
+  $("set-paymonth").addEventListener("change", e => saveSettings({ payMonth: +e.target.value }, "Booking month updated"));
+  $("set-infl").addEventListener("change", e => { const n = parseFloat(e.target.value); if (!(n >= 0 && n <= 20)) { toast("Enter a rate between 0 and 20%"); e.target.value = settings.inflation; return; } saveSettings({ inflation: n }, "Inflation rate updated"); });
+  $("set-anniv").addEventListener("change", e => saveSettings({ anniversary: e.target.value || "" }, "Anniversary saved"));
+  $("travellers").addEventListener("change", () => saveSettings({ travellers: readTravellers() }, "Passports saved"));
+  $("travellers").addEventListener("click", e => { const b = e.target.closest(".rm"); if (!b) return; const tr = readTravellers(); tr.splice(+b.dataset.i, 1); saveSettings({ travellers: tr }, "Traveller removed"); });
+  $("add-traveller").addEventListener("click", () => {
+    const tr = (settings.travellers || []).slice(); tr.push({ name: "", expiry: "" });
+    saveSettings({ travellers: tr }).then(() => { const i = $("tn-" + (tr.length - 1)); if (i) i.focus(); });
+  });
+  [$("set-saved"), $("set-monthly"), $("set-lump"), $("set-infl")].forEach(inp => inp.addEventListener("keydown", e => { if (e.key === "Enter") inp.blur(); }));
+
+  setFilter(filter);
+
+  (async function start() {
+    if (!window.claude || !claude.use) {
+      db = window.HP_LOCAL_DB();
+      $("status").innerHTML = 'Saved in this browser · <button type="button" class="btn" id="bk-save">Download backup</button> <label class="btn" style="display:inline-block">Load backup<input type="file" id="bk-load" accept="application/json" hidden></label>';
+      $("bk-save").addEventListener("click", () => {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([db.exportJSON()], { type: "application/json" }));
+        a.download = "holiday-plan-backup-" + iso(new Date()) + ".json"; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      });
+      $("bk-load").addEventListener("change", async e => {
+        const f = e.target.files[0]; if (!f) return;
+        try { db.importJSON(await f.text()); toast("Backup loaded"); } catch (err) { toast("That file isn't a holiday plan backup"); }
+        e.target.value = "";
+      });
+      db.doc("settings/plan").onSnapshot(s => { if (s.exists) settings = Object.assign({ saved: 0, monthly: 0, inflation: 2.5, anniversary: "", travellers: [] }, s.data()); renderAll(); });
+      db.collection("trips").onSnapshot(snap => { trips = new Map(snap.docs.map(x => [x.id, Object.assign({ id: x.id }, x.data())])); renderAll(); });
+      return;
+    }
+    db = await claude.use("db");
+    if (!db) { $("status").textContent = "Your saved plan isn't available in this view."; $("years").innerHTML = '<div class="empty">Sign in to claude.ai to see your trips and booking status.</div>'; return; }
+    claude.use("sample").then(sm => { sampler = sm; cards.forEach(c => { c.r.daysKey = null; }); if (sm) renderAll(); }).catch(() => {});
+    const user = await claude.use("user");
+    if (user) { try { const c = await user.can("data.write"); if (c === false) { canWrite = false; applyWriteState(); } } catch (e) {} }
+    db.doc("settings/plan").onSnapshot(s => {
+      if (s.exists) settings = Object.assign({ saved: 0, monthly: 0, inflation: 2.5, anniversary: "", travellers: [] }, s.data());
+      renderAll();
+    }, () => {});
+    db.collection("trips").onSnapshot(snap => {
+      trips = new Map(snap.docs.map(x => [x.id, Object.assign({ id: x.id }, x.data())]));
+      renderAll();
+    }, () => { $("status").textContent = "Lost connection to your plan. Reload the page to reconnect."; });
+  })();
+})();
+</script>
+</body>
+</html>
